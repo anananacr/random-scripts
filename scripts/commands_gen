@@ -1,0 +1,22 @@
+## turbo index
+./turbo-index-uni-v2 ../lists/bruno_08_2_cut.lst
+
+##mask making
+python3 sumup_powder.py -i ../lists/bruno_08_2_cut.lst -o ../calib/sum_bruno_8_2.h5&
+
+
+[rodria@max-display009]~/software/CsPadMaskMaker% ./maskMakerGUI.py /asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/calib/sum_sprub_3_3.h5 /data -g /asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/calib/eiger4m_v0_139.geom -m /asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/calib/for_mask_making.h5 -mp data
+SHAPE IS (2162, 2068)
+
+##partialator bash
+script copy in indexing folder with stream file
+check pdb
+mkdir error folder
+./partial-to-change.bash lyso_singlextal05_001_3.stream
+mv all hkl to fom folder
+
+##plot_all.py
+
+change labels according nuumber files plotted together
+exclude function not implemented
+python3 plot_all.py -i lyso_singlextal05_001_3.stream -o plots/lyso_singlextal05_001 -s 4 -e 6
