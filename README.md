@@ -10,7 +10,7 @@ Mail: ana.rodrigues@desy.de
 
 ## Acknowledgments:
 
-Alexandra Tosltikova, Olexandr Yefanov, Marina Galchenkova and Wolfgang Brehm for their contributions in code and discussions.
+Alexandra Tolstikova, Olexander M. Yefanov, Marina Galchenkova and Wolfgang Brehm for their contributions in code and discussions.
 
 ## Dependencies
 
