@@ -2,7 +2,7 @@
 
 # Split a large indexing job into many small tasks and submit using SLURM
 
-# ./turbo-index my-files.lst label my.geom /location/for/streams
+# ./turbo-index-uni-v3 my-files.lst 
 
 # Copyright © 2016-2017 Deutsches Elektronen-Synchrotron DESY,
 #                       a research centre of the Helmholtz Association.
@@ -11,25 +11,21 @@
 #   2016      Steve Aplin <steve.aplin@desy.de>
 #   2016-2017 Thomas White <taw@physics.org>
 
-SPLIT=40  # Size of job chunks
-ROOT=/home/rodria/proc
-#ROOT=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/
+SPLIT=10000  # Size of job chunks
+
+ROOT=/asap3/petra3/gpfs/p09/2023/data/11016752/processed/rodria
 INPUT=$1
 RUN=$(sed 's/.lst//g'<<<$(basename $INPUT))
-GEOM=${ROOT}/calib/JF_regae_v1.geom
+GEOM=${ROOT}/calib/eiger4m_v2.geom
 STREAMDIR=${ROOT}/indexing/streams
-ERRORDIR=error
+ERRORDIR=${ROOT}/error
 
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/AR.cell
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/lysozyme.cell
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/FosAKP_01_grid_fly_002_100humidity.cell #FosAKP_01_lowhum1_grid_fly_002_reduced_humidity.cell #FosAKP_lowhum2_01_grid_fly_002.cell #fosakp_ortho_p.cell
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/FosAKP_01_lowhum1_grid_fly_002_reduced_humidity_c.cell
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/FosAKP_lowhum2_01_grid_fly_002_c.cell
-#PDB=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/FosAKP_01_grid_fly_002_100humidity_c.cell
+#PDB=${ROOT}/pdb/lysozyme.cell
+PDB=${ROOT}/pdb/lasv_apo.cell
 
 source /etc/profile.d/modules.sh
 module load xray
-module load crystfel
+module load maxwell crystfel/0.10.1
 module load hdf5/1.10.5
 
 
@@ -75,7 +71,7 @@ for FILE1 in $(cat $INPUT); do
     echo "#!/bin/sh" > $SLURMFILE
     echo >> $SLURMFILE
 
-    echo "#SBATCH --partition=cfel,all" >> $SLURMFILE  # Set your partition here
+    echo "#SBATCH --partition=upex,cfel,cfel-cdi" >> $SLURMFILE  # Set your partition here
 #    echo "#SBATCH --partition=cfel,cfel-cdi,short,upex,all" >> $SLURMFILE  # Set your partition here
     echo "#SBATCH --time=4:00:00" >> $SLURMFILE
 #    echo "#SBATCH --exclude=max-exfl094,max-exfl095,max-exfl096,max-exfl049,max-exfl047,max-exfl048,max-exfl024,max-exfl036,max-exfl037,max-exfl022,max-exfl082,max-exfl085,max-exfl142,max-exfl200" >> $SLURMFILE
@@ -95,21 +91,28 @@ for FILE1 in $(cat $INPUT); do
     echo "source /etc/profile.d/modules.sh" >> $SLURMFILE
     echo "module load xray" >> $SLURMFILE
     echo "module load hdf5-openmpi/1.10.5" >> $SLURMFILE
-    echo "module load crystfel" >> $SLURMFILE
+    echo "module load maxwell crystfel/0.10.1" >> $SLURMFILE
 	echo "module load hdf5/1.10.5" >> $SLURMFILE
     echo "indexamajig --version" >> $SLURMFILE
 
     echo >> $SLURMFILE
 
     command="indexamajig -i $FILE -o $STREAMDIR/$STREAM"
-    command="$command -j 80 -g $GEOM --int-radius=3,6,8"
-    command="$command --peaks=peakfinder8 --min-snr=4.0 --min-res=10 --max-res=1000 --threshold=0 --min-pix-count=2 --max-pix-count=200 --min-peaks=20 --local-bg-radius=3"
-	#command="$command --peaks=peakfinder8 --min-snr=8 --min-res=10 --max-res=2000 --threshold=5 --min-pix-count=1 --max-pix-count=50 --min-peaks=20 --local-bg-radius=3"
-    #command="$command --indexing=mosflm-latt-nocell  -p $PDB --no-check-cell"
-	#command="$command --indexing=xgandalf --no-cell-combinations --no-check-cell --multi -p $PDB"
-	#command="$command --indexing=mosflm --multi -p $PDB"
-	#command="$command --indexing=mosflm-latt-nocell --multi"
-        command="$command --indexing=none"
+    command="$command -j 20 -g $GEOM --int-radius=3,6,8"
+    command="$command --peaks=peakfinder8 --min-snr=7.4 --min-res=0 --max-res=400 --threshold=0 --min-pix-count=1 --max-pix-count=200 --min-peaks=20 --local-bg-radius=3"
+
+    #command="$command --peaks=peakfinder8 --min-snr=8 --min-res=10 --max-res=2000 --threshold=5 --min-pix-count=1 --max-pix-count=50 --min-peaks=20 --local-bg-radius=3"
+
+    
+    #command="$command --indexing=xgandalf --multi -p $PDB"
+
+    #command="$command --indexing=mosflm --multi -p $PDB"
+    #command="$command --indexing=mosflm-latt-nocell --multi"
+    
+    #command="$command --indexing=none"
+    
+    command="$command --multi -p $PDB"
+
     echo $command >> $SLURMFILE
 
     sbatch $SLURMFILE

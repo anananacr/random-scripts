@@ -31,7 +31,7 @@ def main(raw_args=None):
 
     cmd=f"sed 's/.stream//g'<<<$(basename {args.input})"
     print(cmd)
-    basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-2]
+    basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-1]+'_'
     print(basename)
     files=list(glob.glob(f"./fom/{basename}*.dat"))
     print(files)
@@ -39,8 +39,7 @@ def main(raw_args=None):
     y_label=['SNR', 'CCstar', 'CC', 'CCstarTotal','Rsplit']
     index=np.arange(args.start,args.end+1,1)
     print(index)
-    labels=['0.142', '0.138', '0.140','0.1398','0.1396','0.1395','0.1390','0.1394']
-    labels.reverse()
+    labels=['push 0.5','1.0','1.5']
 
     for idx,i in enumerate(y_label):
         fig = plt.figure(figsize=(10, 5), tight_layout=True)
@@ -63,7 +62,7 @@ def main(raw_args=None):
                 d=df['nref'].to_list()
                 q=df['1/d'].to_list()
                 score=df['centre'].to_list()
-            ax.plot(q,score,marker='o', linestyle='-', label=labels[j-1])
+            ax.plot(q,score,marker='o', linestyle='-', label=labels[idy])
         ax.set_ylabel(y_label[idx], fontsize=12)
         ax.set_xlabel('1/d (1/nm)', fontsize=12)
         #ax.set_xlim(0.15,0.75)
@@ -80,8 +79,9 @@ def main(raw_args=None):
         ax.legend(fontsize=12)
         #plt.ylim(0,100)
         #plt.xlim(0,2)
-        plt.show()
         plt.savefig(f'{args.output}_{y_label[idx]}.pdf')
+        plt.show()
+        
         plt.close()
 
 

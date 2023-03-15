@@ -3,24 +3,31 @@
 INPUT=$1
 stream=$(sed 's/.stream//g'<<<$(basename $INPUT))
 #09 data=${stream}_part09_maxadu_push1
-data=${stream}
-pg="mmm" #"2" #
+data=${stream}_5
+pg="4/mmm" #"2" #"mmm"
 
 pdb=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/rodria/pdb/lysozyme.cell
 #pdb=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/galchenm/pdb/FosAKP_01_grid_fly_002_100humidity.cell #FosAKP_01_lowhum1_grid_fly_002_reduced_humidity.cell #FosAKP_lowhum2_01_grid_fly_002.cell #fosakp_ortho_p.cell #
 
 
 HIGHRES=1.5
+
 LOWRES=20
 resext=0.0 # total CC* is calculated to highres+resext
+
 highres="--highres=${HIGHRES}"      #<- number gives res limit
 lowres="--lowres=${LOWRES}" 
 nsh=20 # number of shells
+
 #maxB="--max-rel-B=50"
+
 model=xsphere
 #model=unity
+
 iterations=3 #2,3
-push="--push-res=1.0" #"--push-res=0.2" "--push-res=0.5" "--push-res=1.5"
+
+push="--push-res=1.0" #"--push-res=0.2" "--push-res=0.5" "--push-res=1.0" "--push-res=1.5"
+
 minres="--min-res=5"
 
 partialator="partialator"
@@ -41,7 +48,7 @@ module load crystfel
     echo "#!/bin/sh" > $SLURMFILE
     echo >> $SLURMFILE
 
-    echo "#SBATCH --partition=cfel,all" >> $SLURMFILE  # Set your partition here
+    echo "#SBATCH --partition=cfel,cfel-cdi,upex" >> $SLURMFILE  # Set your partition here
 #    echo "#SBATCH --partition=upex" >> $SLURMFILE  # Set your partition here
 
     echo "#SBATCH --time=2:00:00" >> $SLURMFILE
@@ -62,7 +69,7 @@ module load crystfel
     echo "source /etc/profile.d/modules.sh" >> $SLURMFILE
     echo "module load xray" >> $SLURMFILE
     echo "module load hdf5-openmpi/1.10.5" >> $SLURMFILE
-    echo "module load maxwell crystfel" >> $SLURMFILE
+    echo "module load maxwell crystfel/0.10.1" >> $SLURMFILE
 	echo "module load hdf5/1.10.5" >> $SLURMFILE
     echo "indexamajig --version" >> $SLURMFILE
 
@@ -95,6 +102,8 @@ module load crystfel
 
     command="check_hkl -p $pdb -y $pg "$highres" $lowres --nshells=$nsh --wilson --shell-file=${data}_Wilson.dat $data.hkl"
     echo $command >> $SLURMFILE
+
+    chmod +x $SLURMFILE
 
     sbatch $SLURMFILE
 	
