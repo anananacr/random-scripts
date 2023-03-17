@@ -18,7 +18,7 @@ def main(raw_args=None):
     help="hdf5 output image")
     parser.add_argument("-s", "--start", type=int, action="store",
     help="hdf5 output image")
-    parser.add_argument("-f", "--end", type=int, action="store",
+    parser.add_argument("-f", "--final", type=int, action="store",
     help="hdf5 output image")
     parser.add_argument("-e", "--exclude", type=int, action="append",
     help="hdf5 output image")
@@ -31,15 +31,24 @@ def main(raw_args=None):
 
     cmd=f"sed 's/.stream//g'<<<$(basename {args.input})"
     print(cmd)
-    basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-1]+'_'
+    ## when testing partialator options
+    #basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-1]+'_'
+
+    ## comparing multiple streams
+    basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-1]
+
+    ## when testing process_hkl options
+    #basename=str(sub.check_output(cmd, shell=True)[:-1])[2:-1]
+
     print(basename)
     files=list(glob.glob(f"./fom/{basename}*.dat"))
-    print(files)
+    #print(files)
     #y_label=['SNR']
     y_label=['SNR', 'CCstar', 'CC', 'CCstarTotal','Rsplit']
-    index=np.arange(args.start,args.end+1,1)
-    print(index)
-    labels=['push 0.5','1.0','1.5']
+    index=np.arange(args.start,args.final+1,1)
+    #print(index)
+    #labels=['push 0.5','1.0','1.5']
+    labels=[f'{basename}', f'{basename}']
 
     for idx,i in enumerate(y_label):
         fig = plt.figure(figsize=(10, 5), tight_layout=True)
@@ -47,7 +56,9 @@ def main(raw_args=None):
         ax2 = ax.twiny()
         for idy,j in enumerate(index):
 		
-            data_path = os.path.join(f'./fom/{basename}{j}_{y_label[idx]}.dat')
+            #data_path = os.path.join(f'./fom/{basename}{j}_{y_label[idx]}.dat')
+            data_path = os.path.join(f'./fom/{basename}_{y_label[idx]}.dat')
+            print(f'./fom/{basename}_{y_label[idx]}.dat')
             if i=='SNR':
                 data= pd.read_csv(data_path,delimiter=' ', usecols=(0,1,2,3,4,5,6,7,8,9,10), skipinitialspace=True)
                 df=pd.DataFrame(data, columns=['Center','SNR','Meas'])
@@ -79,7 +90,7 @@ def main(raw_args=None):
         ax.legend(fontsize=12)
         #plt.ylim(0,100)
         #plt.xlim(0,2)
-        plt.savefig(f'{args.output}_{y_label[idx]}.pdf')
+        plt.savefig(f'{basename}_{y_label[idx]}.pdf')
         plt.show()
         
         plt.close()

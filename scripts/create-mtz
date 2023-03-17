@@ -30,8 +30,8 @@ echo "Running 'f2mtz'..."
 f2mtz HKLIN create-mtz.temp.hkl HKLOUT $OUTFILE > out.html << EOF
 TITLE Reflections from CrystFEL
 NAME PROJECT wibble CRYSTAL wibble DATASET wibble
-CELL 40.62 47.17 150.36  90  90 90
-SYMM P212121
+CELL 52.0 52.0 146.0  90  90 90
+SYMM P41212
 SKIP 3
 LABOUT H K L IMEAN SIGIMEAN
 CTYPE  H H H J     Q

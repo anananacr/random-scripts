@@ -2,37 +2,30 @@
 
 INPUT=$1
 stream=$(sed 's/.stream//g'<<<$(basename $INPUT))
-#09 data=${stream}_part09_maxadu_push1
-data=${stream}_part
+data=${stream}_proc
 pg="422" #"2" #"mmm"
 
+
 pdb=/asap3/petra3/gpfs/p09/2023/data/11016752/processed/rodria/pdb/lasv_apo.cell
-#pdb=/asap3/petra3/gpfs/p09/2023/data/11016752/processed/rodria/pdb/lasv_d2.cell
 #pdb=/asap3/petra3/gpfs/p09/2023/data/11016752/processed/rodria/pdb/lysozyme.cell
 #pdb=/asap3/petra3/gpfs/p09/2022/data/11013671/scratch_cc/galchenm/pdb/FosAKP_01_grid_fly_002_100humidity.cell #FosAKP_01_lowhum1_grid_fly_002_reduced_humidity.cell #FosAKP_lowhum2_01_grid_fly_002.cell #fosakp_ortho_p.cell #
 
 
-HIGHRES=3
+HIGHRES=2.9
 LOWRES=5
 resext=0.0 # total CC* is calculated to highres+resext
 highres="--highres=${HIGHRES}"      #<- number gives res limit
 lowres="--lowres=${LOWRES}" 
-nsh=30 # number of shells
-
-maxB="--max-rel-B=100" #50
+nsh=20 # number of shells
 max_adu=1000
 
-model=xsphere
-#model=unity
-#model=offset
-
-iterations=2 #2,3
+#maxB="--max-rel-B=50"
 
 push="--push-res=0.5" #"--push-res=0.2" "--push-res=0.5" "--push-res=1.0" "--push-res=1.5"
 
 minres="--min-res=5" #"--min-res=5"
 
-partialator="partialator"
+process="process_hkl"
 
 ERRORDIR=error
 
@@ -76,13 +69,20 @@ module load maxwell crystfel/0.10.2
 
     echo >> $SLURMFILE
 
-    #command="$partialator --no-logs --max-adu=7500 --iterations=$iterations --model=$model "$maxB" "$minres" "$push" -i $stream.stream -o $data.hkl -y $pg -j 80"
-    #command="$partialator --no-logs --max-adu=7500 --iterations=$iterations --model=$model "$maxB" "$minres" "$push" -i $stream.stream -o $data.hkl -y $pg -j 80"
-    command="$partialator --no-logs --no-scale --iterations=$iterations --model=$model "$minres" "$push" "$maxB" --max-adu=${max_adu} -i $stream.stream -o $data.hkl -y $pg -j 80"
+    
+    command="$process "$minres" "$push" --max-adu=${max_adu} -i $stream.stream -o $data.hkl -y $pg"
     echo $command >> $SLURMFILE
-        #total CC* calculation
+
+    command="$process "$minres" "$push" --even-only --max-adu=${max_adu} -i $stream.stream -o $data.hkl1 -y $pg"
+    echo $command >> $SLURMFILE
+    
+    command="$process "$minres" "$push" --odd-only --max-adu=${max_adu} -i $stream.stream -o $data.hkl2 -y $pg"
+    echo $command >> $SLURMFILE
+
+    #total CC* calculation
     highres1="--highres="`echo $HIGHRES + $resext | bc`
-#    echo $highres1
+    #echo $highres1
+
     command="compare_hkl -p $pdb -y $pg $highres1 $lowres --nshells=1 --fom=CCstar --shell-file=${data}_CCstarTotal.dat $data.hkl1 $data.hkl2"
     echo $command >> $SLURMFILE
 
