@@ -6,7 +6,7 @@ Python scripts for Serial Crystallography (SX) data processing using CrystFEL.
 
 Ana Carolina Rodrigues
 
-Mail: ana.rodrigues@desy.de
+Mail: sc.anarodrigues@gmail.com
 
 ## Dependencies
 
