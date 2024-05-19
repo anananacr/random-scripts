@@ -1,4 +1,4 @@
-# sx-utils
+# serialx-utils
 
 Python scripts for Serial Crystallography (SX) data processing using CrystFEL.
 
